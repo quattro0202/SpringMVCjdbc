@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+       <import resource="datasource-context.xml"/>
+
+
+       <bean id = "supplierDAOImpl" class="Spring.DAOImplements.SupplierDAOImpl">
+              <property name="dataSource" ref="dataSource"/>
+       </bean>
+
+       <bean id = "employeeDAOImpl" class="Spring.DAOImplements.EmployeeDAOImpl">
+              <property name="dataSource" ref="dataSource"/>
+       </bean>
+
+       <bean id = "orderDAOImpl" class="Spring.DAOImplements.OrderDAOImpl">
+              <property name="dataSource" ref="dataSource"/>
+       </bean>
+
+</beans>

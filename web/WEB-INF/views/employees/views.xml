@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+        "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+    <definition name="employeesList" extends="base.definition">
+        <put-attribute name="title" value="Співробітники"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/employees/employeesList/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="employeesSearch" extends="base.definition">
+        <put-attribute name="title" value="Співробітники"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/employees/employeesSearch/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="employeesEdit" extends="base.definition">
+        <put-attribute name="title" value="Співробітники"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/employees/employeeEdit/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="employeesAdd" extends="base.definition">
+        <put-attribute name="title" value="Співробітники"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/employees/employeesAdd/content.jsp"></put-attribute>
+    </definition>
+
+
+
+</tiles-definitions>

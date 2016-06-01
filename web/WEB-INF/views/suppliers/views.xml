@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+        "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+    <definition name="suppliers" extends="base.definition">
+        <put-attribute name="title" value="Suppliers"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/suppliers/suppliers/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="suppliersList" extends="base.definition">
+        <put-attribute name="title" value="Suppliers Limit Offset"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/suppliers/suppliersList/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="supplierEdit" extends="base.definition">
+        <put-attribute name="title" value="Supplier Edit"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/suppliers/supplierEdit/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="suppliersSearch" extends="base.definition">
+        <put-attribute name="title" value="Supplier Search"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/suppliers/suppliersSearch/content.jsp"></put-attribute>
+    </definition>
+
+    <definition name="suppliersAdd" extends="base.definition">
+        <put-attribute name="title" value="Supplier Search"></put-attribute>
+        <put-attribute name="content" value="/WEB-INF/views/suppliers/suppliersAdd/content.jsp"></put-attribute>
+    </definition>
+</tiles-definitions>
