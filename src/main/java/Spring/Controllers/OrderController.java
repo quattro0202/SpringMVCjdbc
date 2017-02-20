@@ -11,9 +11,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
-/**
- * Created by Олександр on 29.05.2016.
- */
+
 @Controller
 public class OrderController {
 

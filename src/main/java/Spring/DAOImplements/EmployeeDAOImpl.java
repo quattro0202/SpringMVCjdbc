@@ -12,9 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Олександр on 25.05.2016.
- */
+
 public class EmployeeDAOImpl implements EmployeeDAO{
 
     private DataSource dataSource;
@@ -25,18 +23,19 @@ public class EmployeeDAOImpl implements EmployeeDAO{
     public void addEmployee(Employee employee) throws SQLException{
 
         Connection connection = null;
-        String manager1;
-        String manager2;
+        String manager;
+        String managerValue;
+
         if(employee.getManager().getId() == 0) {
-            manager1 = "";
-            manager2 = "";
+            manager = "";
+            managerValue = "";
         }else{
-            manager1 = ", employee_manager";
-            manager2 = ", " + employee.getManager();
+            manager = ", employee_manager";
+            managerValue = ", " + employee.getManager().getId();
         }
 
-        String sql = "INSERT INTO employees (employee_name" + manager1 + ") " +
-                "VALUES (\"" + employee.getName() +"\""+ manager2 + ")";
+        String sql = "INSERT INTO employees (employee_name" + manager + ") " +
+                "VALUES (\"" + employee.getName() +"\""+ managerValue + ")";
         try {
             connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -60,29 +59,14 @@ public class EmployeeDAOImpl implements EmployeeDAO{
     @Override
     public void deleteEmployee(int id) throws SQLException{
         String sql = "delete from employees where employee_id=" + id;
-        String sql2 = "update employees set employee_manager = null where employee_manager = " + id;
 
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        PreparedStatement preparedStatement2 = null;
-        try{
-            connection = dataSource.getConnection();
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement2 = connection.prepareStatement(sql2);
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ) {
 
-            preparedStatement2.executeUpdate();
             preparedStatement.executeUpdate();
-
         }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            try{
-                preparedStatement2.close();
-                preparedStatement.close();
-                connection.close();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+            throw e;
         }
     }
 
@@ -114,7 +98,12 @@ public class EmployeeDAOImpl implements EmployeeDAO{
     @Override
     public List<Employee> getEmployees(int limit, int offset) throws SQLException{
         List<Employee> employees = null;
-        String sql = "SELECT * FROM employees LIMIT " + limit + " OFFSET " + offset;
+        String sql = "select t1.employee_id as _id, t1.employee_name as _name, " +
+                "t1.employee_manager as _manager_id, t2.employee_name as _manager_name, " +
+                "t2.employee_manager as _manager_manager_id " +
+                "from employees t1 " +
+                "left join employees t2 on t1.employee_manager=t2.employee_id " +
+                "LIMIT " + limit + " OFFSET " + offset;
         try(Connection connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();){
@@ -122,9 +111,20 @@ public class EmployeeDAOImpl implements EmployeeDAO{
             employees = new ArrayList<>();
             while(resultSet.next()){
                 Employee employee = new Employee();
-                employee.setId(resultSet.getInt("employee_id"));
-                employee.setName(resultSet.getString("employee_name"));
-                employee.setManager(new Employee(resultSet.getInt("employee_manager")));
+                Employee manager = new Employee();
+
+                manager.setId(resultSet.getInt("_manager_id"));
+                manager.setName(resultSet.getString("_manager_name"));
+                manager.setManager(new Employee(resultSet.getInt("_manager_manager_id")));
+
+                employee.setId(resultSet.getInt("_id"));
+                employee.setName(resultSet.getString("_name"));
+
+
+
+                employee.setManager(manager);
+
+
                 employees.add(employee);
             }
         }catch(Exception e){
@@ -134,14 +134,14 @@ public class EmployeeDAOImpl implements EmployeeDAO{
     }
 
     @Override
-    public List<Employee> getEmployees(Employee employee) throws SQLException{
+    public List<Employee> findEmployees(Employee employee) throws SQLException{
         List<Employee> employees = null;
 
         String employee_manager = "";
         if(employee.getManager().getId() == 0)
-            employee_manager = "employee_manager is NULL";
+            employee_manager = "t1.employee_manager is NULL";
         else
-            employee_manager = "employee_manager = " + employee.getManager();
+            employee_manager = "t1.employee_manager = " + employee.getManager().getId();
 
         String employee_name;
         if(employee.getName().equals(""))
@@ -149,10 +149,15 @@ public class EmployeeDAOImpl implements EmployeeDAO{
         else
             employee_name = "\"%" + employee.getName() + "%\"";
 
-        String sql = "select * from employees where " +
-                "employee_id = " + employee.getId() +
-                " or employee_name like " + employee_name +
-                " or " + employee_manager;
+        String sql =
+                "select t1.employee_id as _id, t1.employee_name as _name, " +
+                    "t1.employee_manager as _manager_id, t2.employee_name as _manager_name, " +
+                    "t2.employee_manager as _manager_manager_id " +
+                "from employees t1 " +
+                "left join employees t2 on t1.employee_manager=t2.employee_id " +
+                "where t1.employee_id = " + employee.getId() +
+                    " or t1.employee_name like " + employee_name +
+                    " or " + employee_manager;
         ResultSet resultSet = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -163,9 +168,16 @@ public class EmployeeDAOImpl implements EmployeeDAO{
             employees = new ArrayList<>();
             while(resultSet.next()){
                 Employee resultEmployee = new Employee();
-                resultEmployee.setId(resultSet.getInt("employee_id"));
-                resultEmployee.setName(resultSet.getString("employee_name"));
-                resultEmployee.setManager(new Employee(resultSet.getInt("employee_manager")));
+                Employee manager = new Employee();
+
+                manager.setId(resultSet.getInt("_manager_id"));
+                manager.setName(resultSet.getString("_manager_name"));
+                manager.setManager(new Employee(resultSet.getInt("_manager_manager_id")));
+
+                resultEmployee.setId(resultSet.getInt("_id"));
+                resultEmployee.setName(resultSet.getString("_name"));
+                resultEmployee.setManager(manager);
+
                 employees.add(resultEmployee);
             }
             resultSet.close();
@@ -194,7 +206,7 @@ public class EmployeeDAOImpl implements EmployeeDAO{
         if(employee.getManager().getId() == 0)
             employee_manager = "NULL";
         else
-            employee_manager = String.valueOf(employee.getManager());
+            employee_manager = String.valueOf(employee.getManager().getId());
 
         String sql = "update employees set employee_id = " + employee.getId() +
                 ", employee_name = \"" + employee.getName() +

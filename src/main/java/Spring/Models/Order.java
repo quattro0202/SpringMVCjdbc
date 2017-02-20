@@ -3,16 +3,16 @@ package Spring.Models;
 
 import java.sql.Date;
 
-/**
- * Created by Олександр on 21.05.2016.
- */
+
 public class Order {
+
     private Integer id;
     private Supplier supplier;
     private Employee employee;
     private Date date;
 
     public Order() {
+
     }
 
     public Integer getId() {

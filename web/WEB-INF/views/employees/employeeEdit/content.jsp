@@ -6,26 +6,18 @@
       <c:if test="${!failMessage.equals(\"\")}">
         <span style="color: red; ">${failMessage}</span>
       </c:if>
-    <form:form commandName="employee" action="/employees/edit/${employee.id}" method="post">
-      <fieldset>
-        <legend>Співробітник</legend>
-        <form:label path="id" >Id</form:label><br/>
-        <form:input path="id" value="${employee.id}" disabled="true" /><form:errors path="id" cssStyle="color: #ff0000;"/>
-        </p>
-        <p>
-          <form:label path="name" >Ім'я</form:label><br/>
-          <form:input path="name" value="${employee.name}" /> <form:errors path="name" cssStyle="color: #ff0000;"/>
-        </p>
-        <p>
-          <label path="manager" >Керуючий</label><br/>
-          <input path="manager" value="${employee.manager.id}"/><span style="color: red; ">${managerError}</span>
-        </p>
+    <form action="/employees/edit/${id}" method="post">
+      <p><strong>Id:</strong>
+        <input name="id" disabled="true" value="${id}"></p>
 
-        <p>
-          <input type="submit" />
-        </p>
-      </fieldset>
-    </form:form>
+      <p><strong>Ім'я:</strong>
+        <input name="name" value="${name}"><span style="color: red; ">${nameFieldError}</span></p>
+
+      <p><strong>Керуючий:</strong>
+        <input name="manager" value="${manager}"><span style="color: red; ">${managerFieldError}</span></p>
+
+      <input type="submit" value="edit">
+    </form>
   </div>
 
 

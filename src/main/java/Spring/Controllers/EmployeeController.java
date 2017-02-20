@@ -16,10 +16,10 @@ import javax.validation.Valid;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * Created by Олександр on 25.05.2016.
- */
+
 
 @Controller
 public class EmployeeController {
@@ -127,48 +127,67 @@ public class EmployeeController {
     public ModelAndView searchPost(HttpServletRequest request) {
 
         ModelAndView modelAndView = new ModelAndView();
-        Employee employee = new Employee();
-        modelAndView.setViewName("employeesSearch");
-        String id = request.getParameter("id");
+        String reqParamId = request.getParameter("id");
+        String reqParamName = request.getParameter("name");
+        String reqParamManager = request.getParameter("manager");
 
-        String manager = request.getParameter("manager");
-        boolean isValid = true;
-        try{
-            if(id.equals("")){
-                employee.setId(-1);
-            }else{
-                employee.setId(Integer.valueOf(id));
+        boolean parametersValid = true;
+
+        String idFieldError = "";
+        String nameFieldError = "";
+        String managerFieldError = "";
+
+
+        if(!checkWithRegExp(reqParamId, 4)){
+            idFieldError += " Поле повинно бути числом " + "\u2265" + " 0 (0-null), в межах Int.";
+            parametersValid = false;
+        }else {
+            if (Long.valueOf(reqParamId) > (long) Integer.MAX_VALUE) {
+                managerFieldError += " Поле повинно бути числом " + "\u2265" + " 0 (0-null), в межах Int.";
+                parametersValid = false;
             }
-        }catch (Exception e){
-            modelAndView.addObject("badId", "Значення повинно бути числом.");
-            isValid = false;
         }
-        try{
-            if(manager.equals("")){
-                employee.setManager(new Employee(-1));
-            }else{
-                employee.setManager(new Employee(Integer.valueOf(manager)));
+
+        if (!checkWithRegExp(reqParamName, 3)) {
+            nameFieldError += " Поле повинно скаладатися з літер та цифр.";
+            parametersValid = false;
+        }
+
+        if (!checkWithRegExp(reqParamManager, 2)) {
+            managerFieldError += " Поле повинно бути числом " + "\u2265" + " 0 (0-null), в межах Int.";
+            parametersValid = false;
+        } else {
+            if (Long.valueOf(reqParamManager) > (long) Integer.MAX_VALUE) {
+                managerFieldError += " Поле повинно бути числом " + "\u2265" + " 0 (0-null), в межах Int.";
+                parametersValid = false;
             }
-        }catch (Exception e){
-            modelAndView.addObject("badManager", "Значення повинно бути числом.");
-            isValid = false;
         }
-        if(!isValid){
-            modelAndView.addObject("id", request.getParameter("id"));
-            modelAndView.addObject("name", request.getParameter("name"));
-            modelAndView.addObject("manager", request.getParameter("manager"));
+
+        if (!parametersValid) {
+            modelAndView.addObject("idFieldError", idFieldError);
+            modelAndView.addObject("nameFieldError", nameFieldError);
+            modelAndView.addObject("managerFieldError", managerFieldError);
+            modelAndView.addObject("id", reqParamId);
+            modelAndView.addObject("name", reqParamName);
+            modelAndView.addObject("manager", reqParamManager);
+            modelAndView.setViewName("employeesSearch");
             return modelAndView;
         }
+
+        Employee employee = new Employee(Integer.valueOf(reqParamId), );
 
         employee.setName(request.getParameter("name"));
 
         List<Employee> employees = null;
         try {
-            employees = getEmployeeDAO().getEmployees(employee);
+            employees = getEmployeeDAO().findEmployees(employee);
         } catch (Exception e) {
             modelAndView.addObject("failMessage", e.getMessage());
             e.printStackTrace();
         }
+
+
+
 
         modelAndView.addObject("employees", employees);
         modelAndView.setViewName("employeesSearch");
@@ -183,11 +202,13 @@ public class EmployeeController {
         modelAndView.setViewName("employeesEdit");
         try {
             employee = employeeDAO.getEmployee(idEmployee);
-            modelAndView.addObject("employee", employee);
             if(employee == null){
-                modelAndView.addObject("employee", new Employee());
                 modelAndView.addObject("failMessage", "Співробітника з id = " + idEmployee + " немає.");
                 return modelAndView;
+            }else {
+                modelAndView.addObject("id", employee.getId());
+                modelAndView.addObject("name", employee.getName());
+                modelAndView.addObject("manager", employee.getManager().getId());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -197,46 +218,74 @@ public class EmployeeController {
     }
 
     @RequestMapping(value = "/employees/edit/{idEmployee}", method=RequestMethod.POST)
-    public ModelAndView employeeEditPost(@Valid Employee employee, BindingResult result, HttpServletRequest request){
+    public ModelAndView employeeEditPost(@PathVariable("idEmployee") int idEmployee, HttpServletRequest request){
 
         ModelAndView modelAndView = new ModelAndView();
-        EmployeeDAO employeeDAO = getEmployeeDAO();
-        modelAndView.setViewName("employeesEdit");
 
-        boolean jspFormIsValid = true;
-        String managerError = "";
+        String reqParamName = request.getParameter("name");
+        String reqParamManager = request.getParameter("manager");
 
+        boolean parametersValid = true;
 
-        if(result.hasErrors()){
-            modelAndView.addObject("employee", employee);
-            jspFormIsValid = false;
+        String nameFieldError = "";
+        String managerFieldError = "";
+
+        if(!checkWithRegExp(reqParamName, 1)){
+            nameFieldError += " Поле повинно мати від 2 до 30 літер чи цифр.";
+            parametersValid = false;
         }
-
-        try {
-            Integer manager = Integer.parseInt(request.getParameter("manager"));
-        }catch(NumberFormatException e) {
-            managerError += " Поле повинно бути числом.";
-            jspFormIsValid = false;
-        }
-
-        if(employee.getManager() != null){
-            try {
-                employeeDAO.editEmployee(employee);
-            } catch (SQLException e) {
-                modelAndView.addObject("failMessage", e.getMessage());
-                return modelAndView;
-            }
-            modelAndView.setViewName("blank");
-            modelAndView.addObject("successMessage", "Співробітника з id = " + employee.getId() + " успішно змінено.");
-            modelAndView.addObject("title", "Співробітники");
-            return modelAndView;
+        if(!checkWithRegExp(reqParamManager, 2)){
+            managerFieldError += " Поле повинно бути числом " + "\u2265" + " 0 (0-null), в межах Int.";
+            parametersValid = false;
         }else {
-            modelAndView.addObject("employee", employee);
-            modelAndView.addObject("managerNotFound", "Співробітника з id=" + employee.getManager().getId() + " немає.");
+            if(Long.valueOf(reqParamManager) > (long)Integer.MAX_VALUE){
+                managerFieldError += " Поле повинно бути числом " + "\u2265" + " 0 (0-null), в межах Int.";
+                parametersValid = false;
+            }else{
+                if(Integer.valueOf(reqParamManager) == idEmployee){
+                    managerFieldError += " Співробітник не може бути сам собі менеджером.";
+                    parametersValid = false;
+                }else{
+                    EmployeeDAO employeeDAO = getEmployeeDAO();
+                    try {
+                        if(employeeDAO.getEmployee(Integer.valueOf(reqParamManager)) == null){
+                            parametersValid = false;
+                            managerFieldError += " Співробітника з id=" + Integer.valueOf(reqParamManager)
+                                    + " немає.";
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        modelAndView.addObject("failMessage", e.getMessage());
+                    }
+                }
+            }
+        }
+        if(!parametersValid){
+            modelAndView.addObject("nameFieldError", nameFieldError);
+            modelAndView.addObject("managerFieldError", managerFieldError);
+            modelAndView.addObject("id", idEmployee);
+            modelAndView.addObject("name", reqParamName);
+            modelAndView.addObject("manager", reqParamManager);
             modelAndView.setViewName("employeesEdit");
             return modelAndView;
         }
 
+        Employee employee = new Employee(idEmployee, reqParamName, new Employee(Integer.valueOf(reqParamManager)));
+        EmployeeDAO employeeDAO = getEmployeeDAO();
+        try {
+            employeeDAO.editEmployee(employee);
+            modelAndView.setViewName("blank");
+            modelAndView.addObject("title", "Співробітники");
+            modelAndView.addObject("successMessage", "Співробітника з id=" + employee.getId() + " успішно змінено.");
+            return modelAndView;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            modelAndView.addObject("failMessage", e.getMessage());
+        }
+
+        modelAndView.setViewName("employeesEdit");
+        return modelAndView;
     }
 
     @RequestMapping(value = "/employees/add", method = RequestMethod.GET)
@@ -276,6 +325,19 @@ public class EmployeeController {
                 return  modelAndView;
             }
         }
+    }
+
+    public static boolean checkWithRegExp(String str, int regExNum){
+        Pattern p = null;
+        switch (regExNum){
+            case 1 : p = Pattern.compile("[\\p{L}0-9]{3,30}$"); break;
+            case 2 : p = Pattern.compile("([1-9][0-9]{0,9})|(0+)$"); break;
+            case 3 : p = Pattern.compile("[\\p{L}0-9]{0,30}$"); break;
+            case 4 : p = Pattern.compile("[1-9]{0}[0-9]{0,9}$|( )"); break;
+        }
+
+        Matcher m = p.matcher(str);
+        return m.matches();
     }
 
     private EmployeeDAO getEmployeeDAO(){

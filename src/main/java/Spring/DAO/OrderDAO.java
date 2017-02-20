@@ -5,9 +5,7 @@ import Spring.Models.Order;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Created by Олександр on 30.04.2016.
- */
+
 public interface OrderDAO {
 
     public void addOrder(Order order) throws Exception;

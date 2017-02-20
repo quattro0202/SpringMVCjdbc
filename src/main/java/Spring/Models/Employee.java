@@ -1,18 +1,13 @@
 package Spring.Models;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
-/**
- * Created by Олександр on 21.05.2016.
- */
 
 public class Employee {
 
     private Integer id;
 
-    @NotNull(message = "Поле не має бути порожнім.")
-    @Size(min = 3, max = 30, message = "Поле повинно містити більше 3 і менше 30 символів.")
+    //@NotNull(message = "Поле не має бути порожнім.")
+    //@Size(min = 3, max = 30, message = "Поле повинно містити більше 3 і менше 30 символів.")
     private String name;
 
 
@@ -20,6 +15,12 @@ public class Employee {
 
     public Employee() {
 
+    }
+
+    public Employee(Integer id, String name, Employee manager) {
+        this.id = id;
+        this.name = name;
+        this.manager = manager;
     }
 
     public Employee(Integer id) {

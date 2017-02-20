@@ -19,7 +19,7 @@
       <tr>
         <td>${empl.id}</td>
         <td>${empl.name}</td>
-        <td>${empl.manager.id}</td>
+        <td>${empl.manager.name}</td>
         <td><a href="/employees/delete/${empl.id}">delete</a></td>
         <td><a href="/employees/edit/${empl.id}">edit</a>
       </tr>

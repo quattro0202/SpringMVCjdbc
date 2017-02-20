@@ -16,9 +16,7 @@ import javax.validation.Valid;
 import java.sql.SQLDataException;
 import java.util.List;
 
-/**
- * Created by Олександр on 30.04.2016.
- */
+
 @Controller
 public class SupplierController {
 
